@@ -7,7 +7,7 @@ function useFetchData(apiEndpoint) {
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [allMovie, setAllMovie] = useState([]);
-  const { setNetworkError } = useError(); // Access the setNetworkError function from the context
+  //const { setNetworkError } = useError(); // Access the setNetworkError function from the context
 
   useEffect(() => {
     if (initialLoad) {
@@ -31,7 +31,7 @@ function useFetchData(apiEndpoint) {
       } catch (error) {
         console.error("Error fetching movie data:", error);
         setLoading(false); // Set loading state false even if there's an error
-        setNetworkError("Network Error: Unable to fetch data"); // Trigger global error state
+        //setNetworkError("Network Error: Unable to fetch data"); // Trigger global error state
       }
     };
 
@@ -40,7 +40,7 @@ function useFetchData(apiEndpoint) {
       fetchAllData(); // Call this function if API exists
     }
 
-  }, [initialLoad, apiEndpoint, setNetworkError]); // Depend on initialLoad and apiEndpoint to trigger API call
+  }, [initialLoad, apiEndpoint]); // Depend on initialLoad and apiEndpoint to trigger API call
 
   return { alldata, allMovie, loading };
 }
