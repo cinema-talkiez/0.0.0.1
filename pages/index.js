@@ -74,7 +74,7 @@ export default function IndexPage() {
         {/* CONDITIONAL BUTTONS */}
         {tokenVerified && validToken ? (
           <button
-            onClick={() => router.push("/index1")}
+            onClick={() => router.push("/index2")}
             className="visitButton"
           >
             Visit HomePage
