@@ -12,18 +12,18 @@ import { Pagination, Navigation, Autoplay, FreeMode } from 'swiper/modules';
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-// ──────────────────────────────────────────────────────────────
-// SKELETON SHIMMER COMPONENT
-// ──────────────────────────────────────────────────────────────
+/* --------------------------------------------------------------
+   LIGHT-WHITE SHIMMER SKELETON
+   -------------------------------------------------------------- */
 const Skeleton = ({ width = "100%", height = "100%", className = "" }) => (
   <div
-    className={`relative overflow-hidden bg-gray-800 rounded-lg ${className}`}
+    className={`relative overflow-hidden bg-gray-200 rounded-lg ${className}`}
     style={{ width, height }}
   >
-    <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-gray-700 to-transparent animate-shimmer" />
+    <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer" />
     <style jsx>{`
       @keyframes shimmer {
-        0% { transform: translateX(-100%); }
+        0%   { transform: translateX(-100%); }
         100% { transform: translateX(100%); }
       }
       .animate-shimmer {
@@ -33,11 +33,11 @@ const Skeleton = ({ width = "100%", height = "100%", className = "" }) => (
   </div>
 );
 
-// ──────────────────────────────────────────────────────────────
-// SKELETON CARD
-// ──────────────────────────────────────────────────────────────
+/* --------------------------------------------------------------
+   SKELETON CARD (light-white)
+   -------------------------------------------------------------- */
 const SkeletonCard = () => (
-  <div className="card bg-gray-800 rounded-lg overflow-hidden">
+  <div className="card bg-gray-200 rounded-lg overflow-hidden">
     <Skeleton height="200px" className="aspect-[2/3]" />
     <div className="p-3 space-y-2">
       <Skeleton height="16px" className="w-3/4" />
@@ -46,9 +46,9 @@ const SkeletonCard = () => (
   </div>
 );
 
-// ──────────────────────────────────────────────────────────────
-// SKELETON GENRE ICON
-// ──────────────────────────────────────────────────────────────
+/* --------------------------------------------------------------
+   SKELETON GENRE ICON
+   -------------------------------------------------------------- */
 const SkeletonGenre = () => (
   <div className="category-item">
     <div className="icon">
@@ -57,9 +57,9 @@ const SkeletonGenre = () => (
   </div>
 );
 
-// ──────────────────────────────────────────────────────────────
-// GENRE LIST
-// ──────────────────────────────────────────────────────────────
+/* --------------------------------------------------------------
+   GENRE LIST
+   -------------------------------------------------------------- */
 const genreList = [
   { name: "action", img: "/img/action.jpg" },
   { name: "adventure", img: "/img/adventure.jpg" },
@@ -80,7 +80,7 @@ export default function Home() {
   const [movieshortname, setMovieshortname] = useState("");
   const searchRef = useRef(null);
 
-  // Token validation
+  /* ---------- token validation ---------- */
   useEffect(() => {
     const storedValidToken = localStorage.getItem("validToken");
     const storedExpirationTime = localStorage.getItem("validTokenExpiration");
@@ -93,21 +93,21 @@ export default function Home() {
     }
   }, [router]);
 
-  // Simulate app load
+  /* ---------- simulate app load ---------- */
   useEffect(() => {
     setTimeout(() => setIsLoading(false), 500);
   }, []);
 
-  // Fetch movies
+  /* ---------- fetch movies ---------- */
   const { alldata, loading } = useFetchData("/api/getmovies");
   const publishedData = (alldata || []).filter(ab => ab.status === "publish");
 
-  // Search
+  /* ---------- search ---------- */
   const searchResult = movieshortname.trim()
     ? publishedData.filter(m => m.title.toLowerCase().includes(movieshortname.toLowerCase()))
     : [];
 
-  // Close search on click outside
+  /* ---------- close search on outside click ---------- */
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (searchRef.current && !searchRef.current.contains(e.target)) {
@@ -120,7 +120,7 @@ export default function Home() {
 
   const handleSearchbarClose = () => setSearchbar(false);
 
-  // Sticky navbar
+  /* ---------- sticky navbar ---------- */
   useEffect(() => {
     const handleScroll = () => {
       const header = document.querySelector("nav");
@@ -130,6 +130,7 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  /* ---------- initial app spinner ---------- */
   if (isLoading) {
     return (
       <div className="loader-container">
@@ -152,7 +153,7 @@ export default function Home() {
         <link rel="icon" href="/img/appicon.jpg" />
       </Head>
 
-      {/* NAVBAR */}
+      {/* ---------- NAVBAR ---------- */}
       <nav className="header">
         <h1 className="logo1">
           <div className="logo-container">
@@ -177,7 +178,7 @@ export default function Home() {
       </nav>
 
       <div>
-        {/* HERO SWIPER WITH SKELETON */}
+        {/* ---------- HERO SWIPER (light-white skeleton) ---------- */}
         {loading ? (
           <div className="slideimagebx1 relative" style={{ minHeight: '400px' }}>
             <Skeleton className="w-full h-full" />
@@ -218,7 +219,7 @@ export default function Home() {
           <p className="text-center py-10 text-white">No movies available</p>
         )}
 
-        {/* GENRES - SMOOTH SWIPER WITH SKELETON */}
+        {/* ---------- GENRES (smooth swiper + light-white skeleton) ---------- */}
         <h1 className="logo4">Genres</h1>
         <div className="category-icons-scroll">
           {loading ? (
@@ -276,7 +277,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* NEWLY RELEASED */}
+        {/* ---------- NEWLY RELEASED ---------- */}
         <h1 className="logo5">Newly Released</h1>
         <div className="scrollcardssec">
           {loading ? (
@@ -322,7 +323,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* ALL GENRE SECTIONS */}
+        {/* ---------- ALL GENRE SECTIONS ---------- */}
         {[
           { title: "Action", genre: "action" },
           { title: "Adventure", genre: "adventure" },
@@ -388,7 +389,7 @@ export default function Home() {
           );
         })}
 
-        {/* ALL MOVIES BUTTON */}
+        {/* ---------- ALL MOVIES BUTTON ---------- */}
         <div className="nextpagelink">
           <Link href="/all">
             <button className="cssbuttons_io_button">
@@ -400,4 +401,4 @@ export default function Home() {
       </div>
     </>
   );
-              }
+          }
