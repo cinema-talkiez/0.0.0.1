@@ -13,80 +13,49 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 
 // ──────────────────────────────────────────────────────────────
-// HORIZONTAL PLAY BUTTON LOADER (used everywhere)
+// SKELETON SHIMMER COMPONENT
 // ──────────────────────────────────────────────────────────────
-const PlayButtonLoader = ({ size = 60, containerClass = "" }) => (
-  <div className={`flex flex-row items-center justify-center gap-4 ${containerClass}`}>
-    <svg viewBox="0 0 100 100" style={{ width: size, height: size, animation: 'pulse 1.6s ease-in-out infinite' }}>
-      <circle cx="50" cy="50" r="42" fill="none" stroke="#ff4d4d" strokeWidth="4"
-        strokeDasharray="280" strokeDashoffset="280"
-        style={{ animation: 'dash 2s linear infinite' }} />
-      <path d="M 38 30 L 38 70 L 68 50 Z" fill="#ff4d4d"
-        style={{ animation: 'bounce 1.6s ease-in-out infinite' }} />
-    </svg>
+const Skeleton = ({ width = "100%", height = "100%", className = "" }) => (
+  <div
+    className={`relative overflow-hidden bg-gray-800 rounded-lg ${className}`}
+    style={{ width, height }}
+  >
+    <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-gray-700 to-transparent animate-shimmer" />
     <style jsx>{`
-      @keyframes dash { to { stroke-dashoffset: 0; } }
-      @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
-      @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+      @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+      }
+      .animate-shimmer {
+        animation: shimmer 1.5s infinite linear;
+      }
     `}</style>
   </div>
 );
 
 // ──────────────────────────────────────────────────────────────
-// SKELETON CARD (used in loading grid)
+// SKELETON CARD
 // ──────────────────────────────────────────────────────────────
 const SkeletonCard = () => (
   <div className="card bg-gray-800 rounded-lg overflow-hidden">
-    <div className="cardimg aspect-[2/3] bg-gray-900 flex flex-row items-center justify-center">
-      <PlayButtonLoader size={48} />
-    </div>
-    <div className="contents p-2">
-      <div className="h-4 bg-gray-700 rounded w-3/4 mb-1"></div>
-      <div className="h-3 bg-gray-700 rounded w-1/2"></div>
+    <Skeleton height="200px" className="aspect-[2/3]" />
+    <div className="p-3 space-y-2">
+      <Skeleton height="16px" className="w-3/4" />
+      <Skeleton height="12px" className="w-1/2" />
     </div>
   </div>
 );
 
 // ──────────────────────────────────────────────────────────────
-// MOVIE CARD WITH HORIZONTAL IMAGE LOADER
+// SKELETON GENRE ICON
 // ──────────────────────────────────────────────────────────────
-const MovieCard = ({ movie }) => {
-  const [imgLoading, setImgLoading] = useState(true);
-
-  return (
-    <div className="card">
-      <Link href={`/movies/${movie.slug}`}>
-        <div className="cardimg relative bg-gray-900 overflow-hidden">
-          {imgLoading && (
-            <div className="absolute inset-0 flex flex-row items-center justify-center">
-              <PlayButtonLoader size={48} />
-            </div>
-          )}
-          <img
-            src={movie.smposter}
-            alt={movie.title}
-            loading="lazy"
-            onLoad={() => setImgLoading(false)}
-            onError={() => setImgLoading(false)}
-            style={{
-              display: imgLoading ? 'none' : 'block',
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover'
-            }}
-            className="transition-opacity duration-300"
-          />
-        </div>
-        <div className="contents">
-          <div className="title-row">
-            <h5>{movie.title}</h5>
-            <span className="type">{movie.type}</span>
-          </div>
-        </div>
-      </Link>
+const SkeletonGenre = () => (
+  <div className="category-item">
+    <div className="icon">
+      <Skeleton height="80px" width="80px" className="rounded-full" />
     </div>
-  );
-};
+  </div>
+);
 
 // ──────────────────────────────────────────────────────────────
 // GENRE LIST
@@ -208,10 +177,10 @@ export default function Home() {
       </nav>
 
       <div>
-        {/* HERO SWIPER WITH HORIZONTAL LOADER */}
+        {/* HERO SWIPER WITH SKELETON */}
         {loading ? (
-          <div className="slideimagebx1 relative bg-gray-900" style={{ minHeight: '400px' }}>
-            <PlayButtonLoader size={80} containerClass="absolute inset-0" />
+          <div className="slideimagebx1 relative" style={{ minHeight: '400px' }}>
+            <Skeleton className="w-full h-full" />
           </div>
         ) : publishedData.length > 0 ? (
           <Swiper
@@ -249,37 +218,62 @@ export default function Home() {
           <p className="text-center py-10 text-white">No movies available</p>
         )}
 
-        {/* GENRES - SMOOTH SWIPER */}
+        {/* GENRES - SMOOTH SWIPER WITH SKELETON */}
         <h1 className="logo4">Genres</h1>
         <div className="category-icons-scroll">
-          <Swiper
-            modules={[FreeMode, Pagination, Navigation, Autoplay]}
-            freeMode={{ enabled: true, momentum: true, momentumRatio: 0.6 }}
-            slidesPerView={5}
-            spaceBetween={30}
-            loop
-            grabCursor
-            autoplay={{ delay: 4000, disableOnInteraction: false }}
-            breakpoints={{
-              1587: { slidesPerView: 8 },
-              1500: { slidesPerView: 7 },
-              1200: { slidesPerView: 6 },
-              1040: { slidesPerView: 5 },
-              768:  { slidesPerView: 4 },
-              650:  { slidesPerView: 3 },
-              480:  { slidesPerView: 2 },
-            }}
-          >
-            {genreList.map((g) => (
-              <SwiperSlide key={g.name} className="category-item">
-                <Link href={`/${g.name}`} onClick={handleSearchbarClose}>
-                  <div className="icon">
-                    <img src={g.img} alt={g.name} loading="lazy" />
-                  </div>
-                </Link>
-              </SwiperSlide>
-            ))}
-          </Swiper>
+          {loading ? (
+            <Swiper
+              slidesPerView={5}
+              spaceBetween={30}
+              loop
+              modules={[FreeMode]}
+              freeMode={{ enabled: true }}
+              breakpoints={{
+                1587: { slidesPerView: 8 },
+                1500: { slidesPerView: 7 },
+                1200: { slidesPerView: 6 },
+                1040: { slidesPerView: 5 },
+                768:  { slidesPerView: 4 },
+                650:  { slidesPerView: 3 },
+                480:  { slidesPerView: 2 },
+              }}
+            >
+              {[...Array(10)].map((_, i) => (
+                <SwiperSlide key={i}>
+                  <SkeletonGenre />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          ) : (
+            <Swiper
+              modules={[FreeMode, Pagination, Navigation, Autoplay]}
+              freeMode={{ enabled: true, momentum: true, momentumRatio: 0.6 }}
+              slidesPerView={5}
+              spaceBetween={30}
+              loop
+              grabCursor
+              autoplay={{ delay: 4000, disableOnInteraction: false }}
+              breakpoints={{
+                1587: { slidesPerView: 8 },
+                1500: { slidesPerView: 7 },
+                1200: { slidesPerView: 6 },
+                1040: { slidesPerView: 5 },
+                768:  { slidesPerView: 4 },
+                650:  { slidesPerView: 3 },
+                480:  { slidesPerView: 2 },
+              }}
+            >
+              {genreList.map((g) => (
+                <SwiperSlide key={g.name} className="category-item">
+                  <Link href={`/${g.name}`} onClick={handleSearchbarClose}>
+                    <div className="icon">
+                      <img src={g.img} alt={g.name} loading="lazy" />
+                    </div>
+                  </Link>
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          )}
         </div>
 
         {/* NEWLY RELEASED */}
@@ -309,7 +303,19 @@ export default function Home() {
             >
               {publishedData.map((movie) => (
                 <SwiperSlide key={movie.slug}>
-                  <MovieCard movie={movie} />
+                  <div className="card">
+                    <Link href={`/movies/${movie.slug}`}>
+                      <div className="cardimg">
+                        <img src={movie.smposter} alt={movie.title} loading="lazy" />
+                      </div>
+                      <div className="contents">
+                        <div className="title-row">
+                          <h5>{movie.title}</h5>
+                          <span className="type">{movie.type}</span>
+                        </div>
+                      </div>
+                    </Link>
+                  </div>
                 </SwiperSlide>
               ))}
             </Swiper>
@@ -360,7 +366,19 @@ export default function Home() {
                   >
                     {filtered.map((movie) => (
                       <SwiperSlide key={movie.slug}>
-                        <MovieCard movie={movie} />
+                        <div className="card">
+                          <Link href={`/movies/${movie.slug}`}>
+                            <div className="cardimg">
+                              <img src={movie.smposter} alt={movie.title} loading="lazy" />
+                            </div>
+                            <div className="contents">
+                              <div className="title-row">
+                                <h5>{movie.title}</h5>
+                                <span className="type">{movie.type}</span>
+                              </div>
+                            </div>
+                          </Link>
+                        </div>
                       </SwiperSlide>
                     ))}
                   </Swiper>
@@ -382,4 +400,4 @@ export default function Home() {
       </div>
     </>
   );
-        }
+              }
