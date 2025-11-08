@@ -1,4 +1,3 @@
-import WelcomeAnimation from "@/components/WelcomeAnimation";
 import useFetchData from "@/hooks/useFetchData";
 import Head from "next/head";
 import { FaTelegramPlane, FaDownload, FaFilm, FaHome, FaSearch, FaTv, FaArrowRight } from "react-icons/fa";
@@ -12,13 +11,12 @@ import "swiper/swiper-bundle.css";
 import { Pagination, Navigation, Autoplay, FreeMode } from 'swiper/modules';
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { IoClose } from "react-icons/io5";
 
 // ──────────────────────────────────────────────────────────────
-// Play-Button Loader (used for hero + individual cards)
+// HORIZONTAL PLAY BUTTON LOADER
 // ──────────────────────────────────────────────────────────────
 const PlayButtonLoader = ({ size = 60, containerClass = "" }) => (
-  <div className={`flex items-center justify-center ${containerClass}`}>
+  <div className={`flex flex-row items-center justify-center gap-4 ${containerClass}`}>
     <svg viewBox="0 0 100 100" style={{ width: size, height: size, animation: 'pulse 1.6s ease-in-out infinite' }}>
       <circle cx="50" cy="50" r="42" fill="none" stroke="#ff4d4d" strokeWidth="4"
         strokeDasharray="280" strokeDashoffset="280"
@@ -35,7 +33,7 @@ const PlayButtonLoader = ({ size = 60, containerClass = "" }) => (
 );
 
 // ──────────────────────────────────────────────────────────────
-// Card with per-image loader
+// MOVIE CARD WITH HORIZONTAL IMAGE LOADER
 // ──────────────────────────────────────────────────────────────
 const MovieCard = ({ movie }) => {
   const [imgLoading, setImgLoading] = useState(true);
@@ -43,9 +41,9 @@ const MovieCard = ({ movie }) => {
   return (
     <div className="card">
       <Link href={`/movies/${movie.slug}`}>
-        <div className="cardimg relative">
+        <div className="cardimg relative bg-gray-900 overflow-hidden">
           {imgLoading && (
-            <div className="absolute inset-0 bg-gray-900 flex items-center justify-center">
+            <div className="absolute inset-0 flex flex-row items-center justify-center">
               <PlayButtonLoader size={48} />
             </div>
           )}
@@ -55,7 +53,12 @@ const MovieCard = ({ movie }) => {
             loading="lazy"
             onLoad={() => setImgLoading(false)}
             onError={() => setImgLoading(false)}
-            style={{ display: imgLoading ? 'none' : 'block' }}
+            style={{
+              display: imgLoading ? 'none' : 'block',
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover'
+            }}
           />
         </div>
         <div className="contents">
@@ -70,7 +73,7 @@ const MovieCard = ({ movie }) => {
 };
 
 // ──────────────────────────────────────────────────────────────
-// Genre List
+// GENRE LIST
 // ──────────────────────────────────────────────────────────────
 const genreList = [
   { name: "action", img: "/img/action.jpg" },
@@ -88,7 +91,6 @@ const genreList = [
 export default function Home() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [navbar, setNavbar] = useState(false);
   const [searchbar, setSearchbar] = useState(false);
   const [movieshortname, setMovieshortname] = useState("");
   const searchRef = useRef(null);
@@ -106,7 +108,7 @@ export default function Home() {
     }
   }, [router]);
 
-  // Simulate initial app load
+  // Simulate app load
   useEffect(() => {
     setTimeout(() => setIsLoading(false), 500);
   }, []);
@@ -120,7 +122,7 @@ export default function Home() {
     ? publishedData.filter(m => m.title.toLowerCase().includes(movieshortname.toLowerCase()))
     : [];
 
-  // Close search on outside click
+  // Close search on click outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (searchRef.current && !searchRef.current.contains(e.target)) {
@@ -131,10 +133,9 @@ export default function Home() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Navbar handlers
   const handleSearchbarClose = () => setSearchbar(false);
 
-  // Sticky header
+  // Sticky navbar
   useEffect(() => {
     const handleScroll = () => {
       const header = document.querySelector("nav");
@@ -166,6 +167,7 @@ export default function Home() {
         <link rel="icon" href="/img/appicon.jpg" />
       </Head>
 
+      {/* NAVBAR */}
       <nav className="header">
         <h1 className="logo1">
           <div className="logo-container">
@@ -191,7 +193,7 @@ export default function Home() {
       </nav>
 
       <div>
-        {/* ───── HERO SWIPER WITH LOADER ───── */}
+        {/* HERO SWIPER WITH HORIZONTAL LOADER */}
         {loading ? (
           <div className="slideimagebx1 relative bg-gray-900" style={{ minHeight: '400px' }}>
             <PlayButtonLoader size={80} containerClass="absolute inset-0" />
@@ -229,10 +231,10 @@ export default function Home() {
             ))}
           </Swiper>
         ) : (
-          <p className="text-center py-10">No movies available</p>
+          <p className="text-center py-10 text-white">No movies available</p>
         )}
 
-        {/* ───── GENRES (SMOOTH) ───── */}
+        {/* GENRES - SMOOTH SWIPER */}
         <h1 className="logo4">Genres</h1>
         <div className="category-icons-scroll">
           <Swiper
@@ -265,14 +267,14 @@ export default function Home() {
           </Swiper>
         </div>
 
-        {/* ───── NEWLY RELEASED ───── */}
+        {/* NEWLY RELEASED */}
         <h1 className="logo5">Newly Released</h1>
         <div className="scrollcardssec">
           {loading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4 p-4">
               {[...Array(8)].map((_, i) => (
                 <div key={i} className="card bg-gray-800 rounded-lg overflow-hidden">
-                  <div className="cardimg aspect-[2/3] bg-gray-900 flex items-center justify-center">
+                  <div className="cardimg aspect-[2/3] bg-gray-900 flex flex-row items-center justify-center">
                     <PlayButtonLoader size={48} />
                   </div>
                 </div>
@@ -303,7 +305,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* ───── GENRE SECTIONS (PER-CARD LOADER) ───── */}
+        {/* ALL GENRE SECTIONS */}
         {[
           { title: "Action", genre: "action" },
           { title: "Adventure", genre: "adventure" },
@@ -326,7 +328,7 @@ export default function Home() {
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4 p-4">
                     {[...Array(8)].map((_, i) => (
                       <div key={i} className="card bg-gray-800 rounded-lg overflow-hidden">
-                        <div className="cardimg aspect-[2/3] bg-gray-900 flex items-center justify-center">
+                        <div className="cardimg aspect-[2/3] bg-gray-900 flex flex-row items-center justify-center">
                           <PlayButtonLoader size={48} />
                         </div>
                       </div>
@@ -361,9 +363,9 @@ export default function Home() {
           );
         })}
 
-        {/* All Movies Button */}
+        {/* ALL MOVIES BUTTON */}
         <div className="nextpagelink">
-          <Link href='/all'>
+          <Link href="/all">
             <button className="cssbuttons_io_button">
               All
               <div className="icon"><FaArrowRight /></div>
