@@ -13,7 +13,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 
 // ──────────────────────────────────────────────────────────────
-// HORIZONTAL PLAY BUTTON LOADER
+// HORIZONTAL PLAY BUTTON LOADER (used everywhere)
 // ──────────────────────────────────────────────────────────────
 const PlayButtonLoader = ({ size = 60, containerClass = "" }) => (
   <div className={`flex flex-row items-center justify-center gap-4 ${containerClass}`}>
@@ -29,6 +29,21 @@ const PlayButtonLoader = ({ size = 60, containerClass = "" }) => (
       @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
       @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
     `}</style>
+  </div>
+);
+
+// ──────────────────────────────────────────────────────────────
+// SKELETON CARD (used in loading grid)
+// ──────────────────────────────────────────────────────────────
+const SkeletonCard = () => (
+  <div className="card bg-gray-800 rounded-lg overflow-hidden">
+    <div className="cardimg aspect-[2/3] bg-gray-900 flex flex-row items-center justify-center">
+      <PlayButtonLoader size={48} />
+    </div>
+    <div className="contents p-2">
+      <div className="h-4 bg-gray-700 rounded w-3/4 mb-1"></div>
+      <div className="h-3 bg-gray-700 rounded w-1/2"></div>
+    </div>
   </div>
 );
 
@@ -59,6 +74,7 @@ const MovieCard = ({ movie }) => {
               height: '100%',
               objectFit: 'cover'
             }}
+            className="transition-opacity duration-300"
           />
         </div>
         <div className="contents">
@@ -176,7 +192,6 @@ export default function Home() {
           </div>
         </h1>
 
-        {/* Bottom Navigation */}
         <div className="bottom-navigation">
           <ul>
             <li><Link href="/" onClick={handleSearchbarClose}><FaHome /><span>Home</span></Link></li>
@@ -273,11 +288,7 @@ export default function Home() {
           {loading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4 p-4">
               {[...Array(8)].map((_, i) => (
-                <div key={i} className="card bg-gray-800 rounded-lg overflow-hidden">
-                  <div className="cardimg aspect-[2/3] bg-gray-900 flex flex-row items-center justify-center">
-                    <PlayButtonLoader size={48} />
-                  </div>
-                </div>
+                <SkeletonCard key={i} />
               ))}
             </div>
           ) : (
@@ -327,11 +338,7 @@ export default function Home() {
                 {loading ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4 p-4">
                     {[...Array(8)].map((_, i) => (
-                      <div key={i} className="card bg-gray-800 rounded-lg overflow-hidden">
-                        <div className="cardimg aspect-[2/3] bg-gray-900 flex flex-row items-center justify-center">
-                          <PlayButtonLoader size={48} />
-                        </div>
-                      </div>
+                      <SkeletonCard key={i} />
                     ))}
                   </div>
                 ) : (
@@ -375,4 +382,4 @@ export default function Home() {
       </div>
     </>
   );
-          }
+        }
