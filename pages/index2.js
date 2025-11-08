@@ -12,9 +12,6 @@ import { Pagination, Navigation, Autoplay, FreeMode } from 'swiper/modules';
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-/* --------------------------------------------------------------
-   LIGHT-WHITE SHIMMER SKELETON
-   -------------------------------------------------------------- */
 const Skeleton = ({ width = "100%", height = "100%", className = "" }) => (
   <div
     className={`relative overflow-hidden bg-gray-200 rounded-lg ${className}`}
