@@ -1,32 +1,25 @@
 import WelcomeAnimation from "@/components/WelcomeAnimation";
-import useFetchData from "@/hooks/useFetchData"; // Fixed typo
+import useFetchData from "@/hooks/useFetchData";
 import Head from "next/head";
-import { FaTelegramPlane } from "react-icons/fa";
+import { FaTelegramPlane, FaDownload, FaFilm, FaHome, FaSearch, FaTv, FaArrowRight } from "react-icons/fa";
 import React, { useState, useEffect, useRef } from 'react';
-
 import { Swiper, SwiperSlide } from "swiper/react";
 import 'swiper/css';
 import "swiper/css/autoplay";
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import "swiper/swiper-bundle.css";
-
 import { Pagination, Navigation, Autoplay, FreeMode } from 'swiper/modules';
 import Link from "next/link";
-import { FaArrowRight, FaDownload, FaFilm, FaHome, FaSearch, FaTv } from "react-icons/fa";
 import { useRouter } from "next/router";
 import { IoClose } from "react-icons/io5";
 
-// Play Button Loader Component
-const PlayButtonLoader = () => (
-  <div style={{
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '140px',
-    width: '100%'
-  }}>
-    <svg viewBox="0 0 100 100" style={{ width: 60, height: 60, animation: 'pulse 1.6s ease-in-out infinite' }}>
+// ──────────────────────────────────────────────────────────────
+// Play-Button Loader (used for hero + individual cards)
+// ──────────────────────────────────────────────────────────────
+const PlayButtonLoader = ({ size = 60, containerClass = "" }) => (
+  <div className={`flex items-center justify-center ${containerClass}`}>
+    <svg viewBox="0 0 100 100" style={{ width: size, height: size, animation: 'pulse 1.6s ease-in-out infinite' }}>
       <circle cx="50" cy="50" r="42" fill="none" stroke="#ff4d4d" strokeWidth="4"
         strokeDasharray="280" strokeDashoffset="280"
         style={{ animation: 'dash 2s linear infinite' }} />
@@ -34,22 +27,51 @@ const PlayButtonLoader = () => (
         style={{ animation: 'bounce 1.6s ease-in-out infinite' }} />
     </svg>
     <style jsx>{`
-      @keyframes dash {
-        to { stroke-dashoffset: 0; }
-      }
-      @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.15); }
-      }
-      @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-6px); }
-      }
+      @keyframes dash { to { stroke-dashoffset: 0; } }
+      @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.15); } }
+      @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
     `}</style>
   </div>
 );
 
-// Genre List (Dynamic)
+// ──────────────────────────────────────────────────────────────
+// Card with per-image loader
+// ──────────────────────────────────────────────────────────────
+const MovieCard = ({ movie }) => {
+  const [imgLoading, setImgLoading] = useState(true);
+
+  return (
+    <div className="card">
+      <Link href={`/movies/${movie.slug}`}>
+        <div className="cardimg relative">
+          {imgLoading && (
+            <div className="absolute inset-0 bg-gray-900 flex items-center justify-center">
+              <PlayButtonLoader size={48} />
+            </div>
+          )}
+          <img
+            src={movie.smposter}
+            alt={movie.title}
+            loading="lazy"
+            onLoad={() => setImgLoading(false)}
+            onError={() => setImgLoading(false)}
+            style={{ display: imgLoading ? 'none' : 'block' }}
+          />
+        </div>
+        <div className="contents">
+          <div className="title-row">
+            <h5>{movie.title}</h5>
+            <span className="type">{movie.type}</span>
+          </div>
+        </div>
+      </Link>
+    </div>
+  );
+};
+
+// ──────────────────────────────────────────────────────────────
+// Genre List
+// ──────────────────────────────────────────────────────────────
 const genreList = [
   { name: "action", img: "/img/action.jpg" },
   { name: "adventure", img: "/img/adventure.jpg" },
@@ -75,7 +97,6 @@ export default function Home() {
   useEffect(() => {
     const storedValidToken = localStorage.getItem("validToken");
     const storedExpirationTime = localStorage.getItem("validTokenExpiration");
-
     if (
       storedValidToken !== "true" ||
       !storedExpirationTime ||
@@ -85,22 +106,18 @@ export default function Home() {
     }
   }, [router]);
 
-  // Simulate initial load
+  // Simulate initial app load
   useEffect(() => {
     setTimeout(() => setIsLoading(false), 500);
   }, []);
 
-  // Fetch data
+  // Fetch movies
   const { alldata, loading } = useFetchData("/api/getmovies");
-
-  // Filter published
   const publishedData = (alldata || []).filter(ab => ab.status === "publish");
 
   // Search
   const searchResult = movieshortname.trim()
-    ? publishedData.filter(movie =>
-        movie.title.toLowerCase().includes(movieshortname.toLowerCase())
-      )
+    ? publishedData.filter(m => m.title.toLowerCase().includes(movieshortname.toLowerCase()))
     : [];
 
   // Close search on outside click
@@ -115,8 +132,6 @@ export default function Home() {
   }, []);
 
   // Navbar handlers
-  const handleNavbarOpen = () => setNavbar(true);
-  const handleNavbarClose = () => setNavbar(false);
   const handleSearchbarClose = () => setSearchbar(false);
 
   // Sticky header
@@ -176,15 +191,19 @@ export default function Home() {
       </nav>
 
       <div>
-        {/* Hero Slider */}
-        {publishedData.length > 0 ? (
+        {/* ───── HERO SWIPER WITH LOADER ───── */}
+        {loading ? (
+          <div className="slideimagebx1 relative bg-gray-900" style={{ minHeight: '400px' }}>
+            <PlayButtonLoader size={80} containerClass="absolute inset-0" />
+          </div>
+        ) : publishedData.length > 0 ? (
           <Swiper
             autoplay={{ delay: 3000, disableOnInteraction: false }}
             loop={true}
             speed={1200}
             pagination={{ clickable: true }}
             modules={[Pagination, Autoplay, Navigation]}
-            onSwiper={(swiper) => !swiper.autoplay.running && swiper.autoplay.start()}
+            onSwiper={(s) => !s.autoplay.running && s.autoplay.start()}
           >
             {publishedData.slice(0, 3).map((movie) => (
               <SwiperSlide key={movie._id}>
@@ -209,9 +228,11 @@ export default function Home() {
               </SwiperSlide>
             ))}
           </Swiper>
-        ) : <p>No movies available</p>}
+        ) : (
+          <p className="text-center py-10">No movies available</p>
+        )}
 
-        {/* Genres - Smooth Swiper */}
+        {/* ───── GENRES (SMOOTH) ───── */}
         <h1 className="logo4">Genres</h1>
         <div className="category-icons-scroll">
           <Swiper
@@ -231,7 +252,6 @@ export default function Home() {
               650:  { slidesPerView: 3 },
               480:  { slidesPerView: 2 },
             }}
-            className="genre-swiper"
           >
             {genreList.map((g) => (
               <SwiperSlide key={g.name} className="category-item">
@@ -245,11 +265,19 @@ export default function Home() {
           </Swiper>
         </div>
 
-        {/* Newly Released */}
+        {/* ───── NEWLY RELEASED ───── */}
         <h1 className="logo5">Newly Released</h1>
         <div className="scrollcardssec">
           {loading ? (
-            <PlayButtonLoader />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4 p-4">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="card bg-gray-800 rounded-lg overflow-hidden">
+                  <div className="cardimg aspect-[2/3] bg-gray-900 flex items-center justify-center">
+                    <PlayButtonLoader size={48} />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
             <Swiper
               slidesPerView={4}
@@ -268,26 +296,14 @@ export default function Home() {
             >
               {publishedData.map((movie) => (
                 <SwiperSlide key={movie.slug}>
-                  <div className="card">
-                    <Link href={`/movies/${movie.slug}`}>
-                      <div className="cardimg">
-                        <img src={movie.smposter} alt={movie.title} loading="lazy" />
-                      </div>
-                      <div className="contents">
-                        <div className="title-row">
-                          <h5>{movie.title}</h5>
-                          <span className="type">{movie.type}</span>
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
+                  <MovieCard movie={movie} />
                 </SwiperSlide>
               ))}
             </Swiper>
           )}
         </div>
 
-        {/* Genre Sections with Loader */}
+        {/* ───── GENRE SECTIONS (PER-CARD LOADER) ───── */}
         {[
           { title: "Action", genre: "action" },
           { title: "Adventure", genre: "adventure" },
@@ -300,62 +316,57 @@ export default function Home() {
           { title: "Thriller", genre: "thriller" },
           { title: "Fantasy", genre: "fantasy" },
           { title: "Science-Fiction", genre: "science_fiction" },
-        ].map(({ title, genre }) => (
-          <div key={genre}>
-            <h1 className="logo3">{title} Movies</h1>
-            <div className="scrollcardssec">
-              {loading ? (
-                <PlayButtonLoader />
-              ) : (
-                <Swiper
-                  slidesPerView={4}
-                  spaceBetween={50}
-                  loop={false}
-                  autoplay={{ delay: 3000, disableOnInteraction: true }}
-                  modules={[Pagination, Navigation, Autoplay]}
-                  breakpoints={{
-                    1587: { slidesPerView: 8 },
-                    1500: { slidesPerView: 7 },
-                    1200: { slidesPerView: 6 },
-                    1040: { slidesPerView: 5 },
-                    768:  { slidesPerView: 4 },
-                    650:  { slidesPerView: 3 },
-                    480:  { slidesPerView: 2 },
-                  }}
-                >
-                  {publishedData
-                    .filter(m => m.genre.includes(genre))
-                    .map((movie) => (
-                      <SwiperSlide key={movie.slug}>
-                        <div className="card">
-                          <Link href={`/movies/${movie.slug}`}>
-                            <div className="cardimg">
-                              <img src={movie.smposter} alt={movie.title} loading="lazy" />
-                            </div>
-                            <div className="contents">
-                              <div className="title-row">
-                                <h5>{movie.title}</h5>
-                                <span className="type">{movie.type}</span>
-                              </div>
-                            </div>
-                          </Link>
+        ].map(({ title, genre }) => {
+          const filtered = publishedData.filter(m => m.genre.includes(genre));
+          return (
+            <div key={genre}>
+              <h1 className="logo3">{title} Movies</h1>
+              <div className="scrollcardssec">
+                {loading ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-4 p-4">
+                    {[...Array(8)].map((_, i) => (
+                      <div key={i} className="card bg-gray-800 rounded-lg overflow-hidden">
+                        <div className="cardimg aspect-[2/3] bg-gray-900 flex items-center justify-center">
+                          <PlayButtonLoader size={48} />
                         </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <Swiper
+                    slidesPerView={4}
+                    spaceBetween={50}
+                    loop={false}
+                    autoplay={{ delay: 3000, disableOnInteraction: true }}
+                    modules={[Pagination, Navigation, Autoplay]}
+                    breakpoints={{
+                      1587: { slidesPerView: 8 },
+                      1500: { slidesPerView: 7 },
+                      1200: { slidesPerView: 6 },
+                      1040: { slidesPerView: 5 },
+                      768:  { slidesPerView: 4 },
+                      650:  { slidesPerView: 3 },
+                      480:  { slidesPerView: 2 },
+                    }}
+                  >
+                    {filtered.map((movie) => (
+                      <SwiperSlide key={movie.slug}>
+                        <MovieCard movie={movie} />
                       </SwiperSlide>
                     ))}
-                </Swiper>
-              )}
+                  </Swiper>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {/* All Movies Button */}
         <div className="nextpagelink">
           <Link href='/all'>
             <button className="cssbuttons_io_button">
               All
-              <div className="icon">
-                <FaArrowRight />
-              </div>
+              <div className="icon"><FaArrowRight /></div>
             </button>
           </Link>
         </div>
